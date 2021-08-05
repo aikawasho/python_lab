@@ -41,42 +41,83 @@ args = parser.parse_args(remaining)
 start_idx = 0
 f = 40000
 fs = 192000
-
+A = 1.2
 pi = np.pi
 phase_list = []
 A_list = []
 tp_num = 0
 levi = 0
 #tp_list =  np.arange(0.0,-30.0,-0.5)
-tp_list =  np.arange(-0.1,-30.1,-0.1)
+tp_list =  np.arange(0,-21.1,-0.1)
+tp_list = np.insert(tp_list,0,100)
 tp_list = np.round(tp_list, 2)
 print(tp_list)
 np.set_printoptions(precision=1)
-for tp in tp_list:
 
-    #filename ='/Users/shota/Documents/klo_lab/matlab/phase/20201105/no'+str(tp)+'.mat'
-    filename ='C:/Users/108ga/Documents/laboratory/Documents/klo-lab/210713/OpNoref_7'+str(tp)+'.mat'
-    #filename ='C:/Users/108ga/Documents/laboratory/Documents/klo-lab/210713/7LSGwNoref_'+str(tp)+'.mat'
-    phase_0 = sio.loadmat(filename)
-    p = phase_0['phix']
+for tp in tp_list:
     p_l = np.zeros(10)
     A_l = np.zeros(10)
-    
-    
-    p_l[1:8] = p.reshape(7)
-    p_l[0] = p[4]
-    p_l[8] = p[2]
-    p_l[9] = p[3]
-    #A_sin0 = phase_0['sin_A']   
-    #A_l[1:8] = A_sin0.reshape(7)
-    #A_l[0] = A_sin0[4]
-    #A_l[8] = A_sin0[2]
-    #A_l[9] = A_sin0[3]
-    A_list.append(np.ones(10))
-    phase_list.append(p_l)
+    if -25 < tp < -21:
+        if tp == -21.01:
+            filename ='/Users/shota/Documents/klo-lab/matlab/phase/210721/ch643_Bw-25-21.0.mat' 
+        else:
+            filename ='/Users/shota/Documents/klo-lab/matlab/phase/210721/ch643_Bw-25'+str(tp)+'.mat'
+
+        phase_0 = sio.loadmat(filename)
+        p = phase_0['phix']
+ 
+            
+        p_l[3] = p[3][0]
+        A_l[3] = 1.5*np.sin(p[3][1])
+        p_l[4] = p[4][0]
+        A_l[4] = 1.5*np.sin(p[4][1])        
+        p_l[5] = p[5][0]
+        A_l[5] = 1.5*np.sin(p[5][1])  
+        p_l[0] = p[5][0]+np.pi
+        A_l[0] = 1.5*np.sin(p[5][1])      
+        p_l[8] = p[3][0]+np.pi
+        A_l[8] = 1.5*np.sin(p[3][1])   
+        p_l[9] = p[4][0]+np.pi
+        A_l[9] = 1.5*np.sin(p[4][1])   
+        A_list.append(A_l)
+        phase_list.append(p_l)
+        
+    elif tp == 100:
+
+        A_list.append(np.ones(10))
+        phase_list.append(np.zeros(10))
+        
+    elif tp == -25.0:
+        filename ='/Users/shota/Documents/klo-lab/matlab/phase/210713/7LSGw-25_'+str(tp)+'.mat'
+        phase_0 = sio.loadmat(filename)
+        p = phase_0['phix']
+        A_l[1:8] = phase_0['sin_A'].reshape(7)
+        p_l[1:8] = phase_0['phix'].reshape(7)
+        A_l[0] = A_l[5]
+        p_l[0] = p_l[5]
+        A_l[8] = A_l[3]
+        p_l[8] = p_l[3]
+        A_l[9] = A_l[4]
+        p_l[9] = p_l[4]
+        A_list.append(A_l)
+        phase_list.append(p_l)        
+    else:
+        filename ='/Users/shota/Documents/klo-lab/matlab/phase/210713/7LSGw-25_'+str(tp)+'.mat'
+        phase_0 = sio.loadmat(filename)
+        p = phase_0['phix']
+        A_l[1:8] = phase_0['sin_A'].reshape(7)
+        p_l[1:8] = phase_0['phix'].reshape(7)
+        A_l[0] = A_l[5]
+        p_l[0] = p_l[5]
+        A_l[8] = A_l[3]
+        p_l[8] = p_l[3]
+        A_l[9] = A_l[4]
+        p_l[9] = p_l[4]
+        A_list.append(A_l)
+        phase_list.append(p_l)
 
     #A_list.append(A_l)
-   
+       #filename ='C:/Users/108ga/Documents/laboratory/Documents/klo-lab/210713/7LSGwNoref_'+str(tp)+'.mat'
         
 with open('amp_list.json') as g:
     df = json.load(g)  
@@ -102,26 +143,26 @@ def callback(outdata, frames, time, status):
     outdata[:,5] = np.reshape(amp_L[5] *A_list[tp_num][5]*np.sin(2 * np.pi * f * t-phase_list[tp_num][5]),outdata[:,0].shape)
     outdata[:,6] = np.reshape(amp_L[6] *A_list[tp_num][6]*np.sin(2 * np.pi * f * t-phase_list[tp_num][6]),outdata[:,0].shape)
     outdata[:,7] = np.reshape(amp_L[7] *A_list[tp_num][7]*np.sin(2 * np.pi * f * t-phase_list[tp_num][7]),outdata[:,0].shape)
-    outdata[:,8] = np.reshape(amp_L[8] *A_list[tp_num][8]*np.sin(2 * np.pi * f * t-phase_list[tp_num][8]),outdata[:,0].shape)
-    outdata[:,9] = np.reshape(amp_L[9]*A_list[tp_num][9]*np.sin(2 * np.pi * f * t-phase_list[tp_num][9]),outdata[:,0].shape)    
+    outdata[:,8] = np.reshape(amp_L[8] *A_list[tp_num][8]*np.sin(2 * np.pi * f * t-phase_list[tp_num][8]-np.pi),outdata[:,0].shape)
+    outdata[:,9] = np.reshape(amp_L[9]*A_list[tp_num][9]*np.sin(2 * np.pi * f * t-phase_list[tp_num][9]),outdata[:,0].shape)  
     
     start_idx += frames
-    if levi == 1 and tp_num != len(tp_list)-1:
-        tp_num += 1
-    else:
-        if tp_num != 0 and levi == 0:
-            tp_num -= 1
+
        
-with sd.OutputStream(device=38, channels=16, callback=callback,
+with sd.OutputStream(device=2, channels=16, callback=callback,
                               samplerate=fs,blocksize=0):
-    
+    a = 1
     while True:
+        print(tp_list[tp_num])
         
         key = input()
         if key == '':
-            if levi == 0:
-                levi = 1
-                print('UP')
+            if tp_num == len(tp_list)-1:
+                #tp_num = len(tp_list)-1
+                a = -1
+                tp_num += a
+            elif tp_num == 0:
+                a = 1
+                tp_num += a
             else:
-                levi = 0
-                print('DOWN')
+                tp_num += a

@@ -48,19 +48,15 @@ A_list = []
 tp_num = 0
 levi = 0
 #tp_list =  np.arange(0.0,-30.0,-0.5)
-tp_list1 =  np.arange(-22,-21.0,0.1)
-tp_list1 = np.append(tp_list1,-21.01)
-tp_list2 =  np.arange(-21.,0.0,0.1)
-tp_list = np.concatenate([tp_list1,tp_list2])
-tp_list = np.append(tp_list,100)
-tp_list = np.insert(tp_list,0,-25)
+tp_list =  np.arange(0,-21.1,-0.1)
+tp_list = np.insert(tp_list,0,100)
 tp_list = np.round(tp_list, 2)
 print(tp_list)
 np.set_printoptions(precision=1)
 
 for tp in tp_list:
-    p_l = np.zeros(10)
-    A_l = np.zeros(10)
+    p_l = np.zeros(12)
+    A_l = np.zeros(12)
     if -25 < tp < -21:
         if tp == -21.01:
             filename ='/Users/shota/Documents/klo-lab/matlab/phase/210721/ch643_Bw-25-21.0.mat' 
@@ -88,37 +84,29 @@ for tp in tp_list:
         
     elif tp == 100:
 
-        A_list.append(np.ones(10))
-        phase_list.append(np.zeros(10))
+        A_list.append(np.ones(12))
+        phase_list.append(np.zeros(12))
         
-    elif tp == -25.0:
-        filename ='/Users/shota/Documents/klo-lab/matlab/phase/210713/7LSGw-25_'+str(tp)+'.mat'
-        phase_0 = sio.loadmat(filename)
-        p = phase_0['phix']
-        A_l[1:8] = phase_0['sin_A'].reshape(7)
-        p_l[1:8] = phase_0['phix'].reshape(7)
-        A_l[0] = A_l[5]
-        p_l[0] = p_l[5]
-        A_l[8] = A_l[3]
-        p_l[8] = p_l[3]
-        A_l[9] = A_l[4]
-        p_l[9] = p_l[4]
-        A_list.append(A_l)
-        phase_list.append(p_l)        
     else:
         filename ='/Users/shota/Documents/klo-lab/matlab/phase/210713/7LSGw-25_'+str(tp)+'.mat'
         phase_0 = sio.loadmat(filename)
         p = phase_0['phix']
         A_l[1:8] = phase_0['sin_A'].reshape(7)
         p_l[1:8] = phase_0['phix'].reshape(7)
-        A_l[0] = A_l[5]
-        p_l[0] = p_l[5]
-        A_l[8] = A_l[3]
-        p_l[8] = p_l[3]
-        A_l[9] = A_l[4]
-        p_l[9] = p_l[4]
+        A_l[0] = phase_0['sin_A'][0]
+        p_l[0] = phase_0['phix'][0]
+        A_l[8] = phase_0['sin_A'][1]
+        p_l[8] = phase_0['phix'][1]
+        A_l[9] = phase_0['sin_A'][2]
+        p_l[9] = phase_0['phix'][2]
+        A_l[10] = phase_0['sin_A'][4]
+        p_l[10] =phase_0['phix'][4]
+        A_l[11] = phase_0['sin_A'][6]
+        p_l[11] = phase_0['phix'][6]
         A_list.append(A_l)
         phase_list.append(p_l)
+        #print(p_l)
+        #print(phase_0['phix'])
 
     #A_list.append(A_l)
        #filename ='C:/Users/108ga/Documents/laboratory/Documents/klo-lab/210713/7LSGwNoref_'+str(tp)+'.mat'
@@ -147,13 +135,14 @@ def callback(outdata, frames, time, status):
     outdata[:,5] = np.reshape(amp_L[5] *A_list[tp_num][5]*np.sin(2 * np.pi * f * t-phase_list[tp_num][5]),outdata[:,0].shape)
     outdata[:,6] = np.reshape(amp_L[6] *A_list[tp_num][6]*np.sin(2 * np.pi * f * t-phase_list[tp_num][6]),outdata[:,0].shape)
     outdata[:,7] = np.reshape(amp_L[7] *A_list[tp_num][7]*np.sin(2 * np.pi * f * t-phase_list[tp_num][7]),outdata[:,0].shape)
-    outdata[:,8] = np.reshape(amp_L[8] *A_list[tp_num][8]*np.sin(2 * np.pi * f * t-phase_list[tp_num][8]-np.pi),outdata[:,0].shape)
+    outdata[:,8] = np.reshape(amp_L[8] *A_list[tp_num][8]*np.sin(2 * np.pi * f * t-phase_list[tp_num][8]),outdata[:,0].shape)
     outdata[:,9] = np.reshape(amp_L[9]*A_list[tp_num][9]*np.sin(2 * np.pi * f * t-phase_list[tp_num][9]),outdata[:,0].shape)  
-    
+    outdata[:,10] = np.reshape(amp_L[10] *A_list[tp_num][10]*np.sin(2 * np.pi * f * t-phase_list[tp_num][10]),outdata[:,0].shape)
+    outdata[:,11] = np.reshape(amp_L[11]*A_list[tp_num][11]*np.sin(2 * np.pi * f * t-phase_list[tp_num][11]),outdata[:,0].shape) 
     start_idx += frames
 
        
-with sd.OutputStream(device=2, channels=16, callback=callback,
+with sd.OutputStream(device=2, channels=12, callback=callback,
                               samplerate=fs,blocksize=0):
     a = 1
     while True:
